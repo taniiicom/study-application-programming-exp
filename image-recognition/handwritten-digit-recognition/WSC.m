@@ -1,8 +1,8 @@
 % Weighted Subspace Classifier 
-clear all; close all; 
+% clear all; close all; 
 
 % パラメータの設定
-r=13;      % 部分空間の次元
+% r=10;      % 部分空間の次元
 imgnum=1;  % test sample number for displaying Uc 
 nclass=10; % 全クラス(0から9の数字)の総数
 
@@ -13,38 +13,39 @@ for ii = 1 : ndata
     trai(:,ii)=trai(:,ii)./norm(trai(:,ii)); % 正規化 
 end
 
-figure(1),clf
+% figure(1),clf
 %% forming subspaces
 for c = 1 : nclass 
     X=trai(:,find(trai_label==c-1)); 
     [C(c).U,C(c).eigval]=EVD(X); 
     %% displaying U of each class 
-    for ii = 1 : 10 
-        IMG=reshape(C(c).U(:,ii),[16 16]); 
-        IMG=IMG-min(IMG(:)); 
-        IMG=IMG./max(IMG(:)); 
-        figure(1),subplot(10,10,(c-1).*10+ii),imshow(IMG); 
-    end
+    % for ii = 1 : 10 
+    %     IMG=reshape(C(c).U(:,ii),[16 16]); 
+    %     IMG=IMG-min(IMG(:)); 
+    %     IMG=IMG./max(IMG(:));
+    %     figure(1),subplot(10,10,(c-1).*10+ii),imshow(IMG); 
+    % end
     fprintf(1,'class %d ...OK\n',c-1); 
 end
 
-figure(2),clf
+% figure(2),clf
 %% displaying Uc
-Q=test(:,imgnum)./norm(test(:,imgnum)); 
-IMG=reshape(Q,[16 16]);
-IMG=IMG-min(IMG(:));
-IMG=IMG./max(IMG(:));
-figure(2),subplot(2,10,5),imshow(IMG); 
-title('test sample'); 
-for c = 1 : nclass 
-    a=C(c).U(:,1:r)'*Q; 
-    IMG=reshape(C(c).U(:,1:r)*a,[16 16]); 
-    IMG=IMG-min(IMG(:));
-    IMG=IMG./max(IMG(:)); 
-    figure(2),subplot(2,10,10+c),imshow(IMG); 
-    s=sprintf('class %d',c-1);
-    title(s); 
-end
+% Q=test(:,imgnum)./norm(test(:,imgnum)); 
+% IMG=reshape(Q,[16 16]);
+% IMG=IMG-min(IMG(:));
+% IMG=IMG./max(IMG(:));
+% figure(2),subplot(2,10,5),imshow(IMG); 
+% title('test sample'); 
+% for c = 1 : nclass 
+%     a=C(c).U(:,1:r)'*Q; 
+%     IMG=reshape(C(c).U(:,1:r)*a,[16 16]); 
+%     IMG=IMG-min(IMG(:));
+%     IMG=IMG./max(IMG(:)); 
+%     figure(2),subplot(2,10,10+c),imshow(IMG); 
+%     s=sprintf('class %d',c-1);
+%     title(s); 
+% end
+
 
 %% weighted subspace classifier
 w=sqrt([r:-1:1]');  % linear weight 

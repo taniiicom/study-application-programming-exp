@@ -1,10 +1,10 @@
 % Feature Extraction（特徴抽出）
 
 % モード設定
-mode = 0; % 0: HOG特徴抽出なし 1: HOG特徴抽出あり
+mode = 1; % 0: HOG特徴抽出なし 1: HOG特徴抽出あり
 
 % HOGパラメータの設定
-cellSize = [4 4]; % [2 2], [4 4], [8 8]
+cellSize = [8 8]; % [2 2], [4 4], [8 8]
 %clear test_data trai_data % cellSizeの値を変更する場合は「%」を外す
 
 switch mode

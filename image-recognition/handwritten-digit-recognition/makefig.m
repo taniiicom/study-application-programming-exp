@@ -9,5 +9,5 @@ end
 figure
 Dimension=1:MaxDim;
 plot(Dimension,Accuracy,'-x')
-xlabel('次元 r')
-ylabel('認識率[%]')
+xlabel('Dimension r')
+ylabel('Accuracy[%]')
