@@ -7,15 +7,16 @@ use std::fs::File;
 
 fn rnd_exp(lambda: f64, n: usize) -> Vec<f64> {
   let mut rng = rand::thread_rng();
-  let mut results = Vec::new();
 
-  for _ in 0..n {
-    let u: f64 = rng.gen_range(0.0..1.0);
-    let x = -1.0 * (1.0 / lambda) * (1.0 - u).ln();
-    results.push(x);
-  }
+  // 生成する乱数の個数分だけイテレートし, 指数分布に従う乱数を生成する
+  (0..n)
+    .map(|_| {
+      let u: f64 = rng.gen(); // [0, 1) の範囲で乱数を生成
 
-  results
+      // 指数分布の累積分布関数 F(x) = 1 - e^(-λx) の逆関数 F^(-1)(u) = -ln(1 - u) / λ
+      -u.ln() / lambda // 逆関数法により指数分布に従う乱数に変換
+    })
+    .collect()
 }
 
 fn calculate_mean_and_variance(data: &Vec<f64>) -> (f64, f64) {
