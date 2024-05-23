@@ -1,4 +1,5 @@
 \documentclass[fleqn, a4paper. 12pt]{jsarticle} 
+\usepackage{cite}
 \usepackage{amsmath,txfonts}
 \usepackage{amssymb}
 \usepackage{url}
@@ -7,6 +8,7 @@
 \usepackage{listings,jvlisting}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
+\usepackage{hyperref}
 \lstset{
   basicstyle={\ttfamily},
   identifierstyle={\small},
@@ -34,534 +36,215 @@
 \lhead{谷 知拓 - Tomohiro Tani}
 \cfoot{\thepage\ / \pageref{LastPage}}
 
+\geometry{left=25mm,right=25mm,top=25mm,bottom=30mm}
 
 \begin{document}
+
   \begin{titlepage}
     \begin{center}
       {\Huge 2024年度\\応用プログラミング実験}
       
       \vspace{4cm}
-      {\Huge 第4回\\マルチメディア情報検索\\
+      {\Huge 第6-8回\\確率プログラミング\\
         実験レポート\\
       }
       \vspace{4cm}
       {\large 学修番号: 22140026\\谷 知拓 - Tomohiro Tani\footnote{東京都立大学 システムデザイン学部 情報科学科 \\ mail@taniii.com} \\}
       \vspace{0.5cm}
       {\large
-        レポート提出日 : 2024-05-09 \\
+        第1回レポート提出日 : 2024-05-22
       }
     \end{center}
   \end{titlepage}
-  
-  \section{はじめに}
-    本書では，『応用プログラミング実験』第4回の実施報告を行う．\\
-    部分空間法を用いて手書きの数字の認識を行う．\\
 
-  \section{実験環境}
+  \section*{はじめに}
+
+    本レポートでは，『応用プログラミング実験』第6-8回の実施報告を行う．
+
+  \subsection*{実験の概要}
+
+    本実験では，確率プログラミングについて学ぶ．
+    以下の課題に取り組み，その結果を報告する．
+
+    \begin{enumerate}
+      \item 課題1-1: 逆関数法による乱数生成
+      \item 課題1-2: 逆関数法による乱数生成
+      \item 課題1-3: ランダムウォーク
+      \item 課題1-A: 線形合同法
+    \end{enumerate}
+
+  \subsection*{実験環境}
 
     実験環境は以下の通りである．
 
     \begin{itemize}
       \item OS\footnote{Operating System}: macOS Ventura 13.4.1
-      \item CPU\footnote{Central Processing Unit}: Apple M2 arm64\footnotemark[7]
-      \item メインメモリ・ビデオメモリ共通: 16GBユニファイドメモリ\footnotemark[7]
-      \footnotetext[7]{https://www.apple.com/jp/macbook-air-13-and-15-m2/specs/}
-      \item 実行環境 (matlab): matlab R2023b (23.2.0.2380103) 64-bit (maca64)
+      \item CPU\footnote{Central Processing Unit}: Apple M2 arm64\footnotemark[4]
+      \item メインメモリ・ビデオメモリ共通: 16GBユニファイドメモリ\footnotemark[4]
+      \footnotetext[4]{https://www.apple.com/jp/macbook-air-13-and-15-m2/specs/}
+      \item 実行環境 (rustc): rustc 1.78.0 (9b00956e5 2024-04-29)
+      \item 実行環境 (cargo): cargo 1.78.0 (54d8815d0 2024-03-26)
     \end{itemize}
 
-  \section{実験の概要}
+  \newpage
+  \section*{課題1-1: 逆関数法による乱数生成}
 
-    本実験では，部分空間法を用いて手書きの数字の認識を行う．
+    \texttt{kadai\_1\_1\_tomohiro\_tani.rs} を参照のこと．
 
-    手書きの数字のデータセットを用いて，部分空間法を用いて手書きの数字の認識を行う．
+    \quad
 
-    また，部分空間法を用いて手書きの数字の認識を行う際に，どのような手法を用いるか，また，その手法を用いることでどのような効果があるかを考察する．
+    なお，プログラムを実行して確認しやすくするために，上記プログラムと合わせて，依存関係の定義など実行に必要なファイルを含めたプロジェクトリポジトリ \texttt{rust} を添付している．
 
-  \section{部分空間法の原理}
+    実行方法は以下の通りである．
 
-    部分空間法は, パターン認識において広く用いられる手法であり，高次元データの持つ構造をより低次元の空間に射影し，その射影された空間でのデータの特性を利用して識別を行う手法である．
+    まず，\texttt{rust} の実行環境は以下のコマンドでインストールすることができる．
 
-    この手法を用いて，データの次元を削減することで，様々なパターン変動 (認識対象のパターンが様々な要因により変化すること) を，小さい辞書で表現することができ，高速かつ高精度な認識が可能となる．
+    \begin{verbatim}
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    \end{verbatim}
 
-    部分空間法を用いたパターン認識の基本的な流れは，まず学習段階において，クラスごとに，エントロピーが最小化されるような部分空間 (より低次元な空間) を見つける．
+    各課題は, \texttt{works} モジュール内のサブモジュールに含まれているので, それぞれのサブモジュールの \texttt{main} 関数を呼び出すことで実行できる.
 
-    そして，識別段階において，データをその部分空間に射影し，射影されたデータの特性を利用して識別を行う．
+    各課題を実行するためには, \texttt{src} ディレクトリ直下の \texttt{main} 関数内で呼び出す関数を変更する.
 
-    以下では，具体的な手法について説明する．
+    実行は，プロジェクトリポジトリ直下で，以下のコマンドで行うことでできる．
 
+    \begin{verbatim}
+      cargo run
+    \end{verbatim}
 
+  \newpage
+  \section*{課題1-2: 逆関数法による乱数生成}
 
-    \subsection{学習}
+    \texttt{kadai\_1\_2\_tomohiro\_tani.rs} を参照のこと．
 
-        学習段階においては，クラスごとに，エントロピーが最小化されるような部分空間を見つける．
-    
-        式 \ref{eq:1} で表されるエントロピーが最小となるような，部分空間軸を求める．
+    \subsection*{概要}
+    課題1-1で作成した関数\texttt{rnd\_exp}が，$\lambda$の指数分布に従う乱数を生成しているかを検証する．検証方法として，以下の2つの観点から理論値と比較する：
+    \begin{enumerate}
+        \item 乱数の平均値と分散
+        \item 乱数の分布
+    \end{enumerate}
 
-        \begin{equation}
-            \min _{\boldsymbol{u}_i}-\sum_{i=1}^d p\left(\boldsymbol{u}_i\right) \log p\left(\boldsymbol{u}_i\right)
-            \label{eq:1}
-        \end{equation}
+    \subsection*{平均値と分散の検証}
+    まず，$\lambda = 1.0, 1.5, 2.0$ の3つの異なるパラメータに対して，$n = 10,000$個の乱数を生成した．生成された乱数の平均値と分散を計算し，理論値と比較した．
 
-        ただし，$p\left(\boldsymbol{u}_i\right)$ は，部分空間軸 $\boldsymbol{u}_i$ におけるデータの分布を表す確率密度関数である．
+    理論値は以下の通り：
+    \begin{align*}
+        \text{平均値} & : E[X] = \frac{1}{\lambda} \\
+        \text{分散} & : V[X] = \frac{1}{\lambda^2}
+    \end{align*}
 
-        \quad
+    \quad
 
-        ここで，データから最適な部分空間軸 (部分空間の基底ベクトル) を求めるために，主成分分析 (PCA) や線形判別分析 (LDA) を用いる方法がある．
-        
-        主成分分析において，最も分散が大きい方向を求める場合や，線形判別分析において，クラス間分散を最大化しつつクラス内分散を最小化する方向を見つける場合に，
-        \textbf{制約付き最適化問題} を解く必要があり，これに \textbf{ラグランジュの未定乗数法} を用いることがある．
+    シミュレーション結果と理論値の平均値及び分散を表 \ref{table:1}にまとめる．
 
-        \quad
-
-        ラグランジュの未定乗数法は，以下のように解くことができる．
-
-        仮に，以下のような制約付き最適化問題を考える．
-
-        \begin{quote}
-            制約条件
-            $g(\boldsymbol{x})=0$
-            のもとで関数
-            $f(\boldsymbol{x})$ 
-            の極地を求めよ
-        \end{quote}
-
-        \quad
-
-        まず，ラグランジュ関数を以下のように定義する．
-
-        \begin{equation}
-            L(\boldsymbol{x}, \lambda)=f(\boldsymbol{x})+\lambda g(\boldsymbol{x})
-        \end{equation}
-
-        このラグランジュ関数を最小化するために，以下のような方程式を解く．
-
-        \begin{equation}
-            \frac{\partial}{\partial \boldsymbol{x}} L=\nabla f-\lambda \nabla g=\mathbf{0}, \frac{\partial L}{\partial \lambda}=0
-        \end{equation}
-
-        この方程式を解くことで，制約条件のもとでの関数の極値を求めることができる．
-
-        \quad
-
-        部分空間法では，$\boldsymbol{u}^{\top} \boldsymbol{u}=1$ を制約条件として，
-        $\boldsymbol{u}^{\top} \mathbf{A} \boldsymbol{u}$ の最大値を求める問題を解く必要があることが頻出である．
-
-        \begin{equation}
-            \begin{gathered}
-            \max _{\boldsymbol{u}} \boldsymbol{u}^{\top} \mathbf{A} \boldsymbol{u} \\
-            \text { s.t. } \boldsymbol{u}^{\top} \boldsymbol{u}-1=0
-            \end{gathered}
-        \end{equation}
-
-        ただし，$\mathbf{A}$ は半正定値対称行列である．
-
-        \quad
-
-        このような問題を解くために，ラグランジュの未定乗数法を用いることがある．
-
-        ラグランジュ乗数 $\lambda$ を導入し，ラグランジュ関数を以下のように定義する．
-
-        \begin{equation}
-            L(\boldsymbol{u}, \lambda)=\boldsymbol{u}^{\top} \mathbf{A} \boldsymbol{u}+\lambda\left(\boldsymbol{u}^{\top} \boldsymbol{u}-1\right)
-        \end{equation}
-
-        制約条件のもとで，関数が極値を取る点は次式を満たす．
-
-        \begin{equation}
-            \partial L / \partial \boldsymbol{u}=\mathbf{0}, \partial L / \partial \lambda=0
-        \end{equation}
-
-        $\partial L / \partial \boldsymbol{u}=2 \mathbf{A} \boldsymbol{u}-2 \lambda \boldsymbol{u}=\mathbf{0}$
-        より，$\mathbf{A} \boldsymbol{u}=\lambda \boldsymbol{u}$ が成り立つ．
-
-    \subsection{識別}
-
-        続いて，識別段階においては，データを学習によって得られた部分空間に射影し，射影されたデータの特性を利用して，クラス分けを行う．
-
-        \quad
-
-        識別においては，以下のような問題設定を考える．
-
-        \begin{quote}
-            \begin{enumerate}
-                \item 総数 $n$ 個の $d$ 次元訓練パターン $x_i$ が与えられており，それらが $C$ 個のクラスのいずれか 1 つに分類されている．
-                \item クラス $j$ に属する訓練パターンを良く近似することのできる部分空間を張る正規直交ベクトルの行列を $\mathbf{U}_j$ とする．
-            \end{enumerate}
-        \end{quote}
-
-        このとき，未知パターン $x$ が与えられたとき，属するクラスを求めるための，部分空間法の識別則は以下のように定義できる．
-
-        \begin{equation}
-            \max _{j=1, \ldots, C}\left\{\left\|\mathbf{U}_j^{\top} \boldsymbol{x}\right\|\right\}=\left\|\mathbf{U}_k^{\top} \boldsymbol{x}\right\| \Rightarrow \boldsymbol{x} \in \text { class } k
-        \end{equation}
-
-        これは，未知パターン $x$ を各クラスの部分空間に射影し，射影されたデータのノルムが最大となるクラスに分類するということを意味している．
-
-        \quad
-
-        部分空間法よりシンプルな識別則として，最小距離法が考えられるが，これは，$d_j^2 = \|x\|^2 - \|U_j^T x\|^2$ 
-        が最小となるクラスに分類するというものである．
-
-        ただし，$d_j$ は，未知パターン $x$ とクラス $j$ の部分空間との距離を表す．
-
-        \quad
-
-        ここで，$\|x\|^2$ は，クラスに関わらず共通であるため，$\|U_j^T x\|^2$ が最大となるクラスを探せば良い．
-
-        したがって，最小距離法による識別則と，部分空間法による識別則は，矛盾しない．
-
-        このようにして，部分空間法を用いて，未知パターンをクラス分けすることができる．
-
-  \section{実験結果}
-
-    実験結果は以下の通りである．
-
-    図 \ref{fig:1} は，次元 $r = 1, \dots, 20$ と認識率の関係をグラフにしたものである．
-
-    \begin{figure}
+    \begin{table}[h]
       \centering
-      \includegraphics[width=1\textwidth]{fig_0.pdf}
-      \caption{次元 $(r = 1, \dots, 20)$ と認識率の関係}
+      \caption{シミュレーション結果と理論値の比較}
+      \begin{tabular}{|c|c|c|c|c|}
+      \hline
+      $\lambda$ & 平均値 (理論値) & 平均値 (シミュレーション) & 分散 (理論値) & 分散 (シミュレーション) \\
+      \hline
+      1.0 & 1.000 & 0.998 & 1.000 & 1.018 \\
+      1.5 & 0.667 & 0.658 & 0.444 & 0.452 \\
+      2.0 & 0.500 & 0.493 & 0.250 & 0.240 \\
+      \hline
+      \end{tabular}
+      \label{table:1}
+    \end{table}
+
+    シミュレーション結果は理論値と高い精度で一致しており，\texttt{rnd\_exp}関数が正しく指数分布に従う乱数を生成していることが確認できた．
+
+    \subsection*{分布の検証}
+    次に，生成された乱数の分布をプロットし，理論的な確率密度関数と比較した．図 \ref{fig:1} 〜 図 \ref{fig:3} は，$\lambda = 1.0, 1.5, 2.0$ に対する確率密度関数と生成された乱数のヒストグラムを示している．
+
+    \begin{figure}[!h]
+      \centering
+      \includegraphics[width=0.6\textwidth]{lambda_1.0_plot.png}
+      \caption{ $\lambda = 1.0$の指数分布}
       \label{fig:1}
     \end{figure}
 
-  \section{付録}
+    \begin{figure}[!h]
+      \centering
+      \includegraphics[width=0.6\textwidth]{lambda_1.5_plot.png}
+      \caption{ $\lambda = 1.5$の指数分布}
+      \label{fig:2}
+    \end{figure}
 
-    作成したソースコードを以下に示す．
+    \begin{figure}[!h]
+      \centering
+      \includegraphics[width=0.6\textwidth]{lambda_2.0_plot.png}
+      \caption{ $\lambda = 2.0$の指数分布}
+      \label{fig:3}
+    \end{figure}
 
-    \begin{lstlisting}
-      // global.h
-      #include <stdio.h>
-      #include <stdlib.h>
-      #include <string.h>
-      #include <ctype.h>
+    これらの図から，生成された乱数が理論的な指数分布に高い精度で一致していることが確認できる．
 
-      #define BSIZE 128
-      #define NONE  -1
-      #define EOS   '\0'
+    \subsection*{考察}
 
-      #define NUM   256
-      #define DIV   257
-      #define MOD   258
-      #define ID    259
-      #define DONE  260
+      結果より，以下のように考察できる．
 
-      #define ASSIGN 261
+    \begin{itemize}
+        \item 平均値と分散が理論値と高い精度で一致していることから，\texttt{rnd\_exp}関数が正しく動作していることが確認できた．
+        \item 確率密度関数と乱数の分布が高い精度で一致していることから，生成された乱数が期待通りの分布に従っていることが確認できた．
+        \item 逆関数法により，期待する確率分布に従う乱数を生成することができることが確認できた．
+    \end{itemize}
 
-      #define WHILE 262
-      #define DO 263
-      #define BEGIN 263
-      #define END 264
+  \newpage
 
-      int tokenval;
-      int lineno;
+  \section*{課題1-3: ランダムウォーク}
 
-      struct entry {
-        char *lexptr;
-        int token;
-      };
+    \texttt{kadai\_1\_3\_tomohiro\_tani.rs} を参照のこと．
 
-      struct entry symtable[];
+    \subsection*{概要}
+    ランダムウォークのシミュレーションを行い，その結果を分析する．具体的には，$p = 0.5, d = 1$ の条件で1回のランダムウォーク（1000ステップ）の軌跡をプロットし，100回の独立なシミュレーションで得られる $t = 1000$ における点の位置 $S_{1000}$ の平均値と分散を計算する．
+    
+    \subsection*{結果}
+    
+    \subsubsection*{1回のランダムウォークの軌跡}
+    図 \ref{fig:4} は，1回のランダムウォークで得られた点の位置 $S_t (t = 0, 1, ..., 1000)$ の軌跡を示している．
+    
+    \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{random_walk_plot.png}
+    \caption{ランダムウォークの軌跡}
+    \label{fig:4}
+    \end{figure}
+    
+    \subsubsection*{$S_{1000}$の平均値と分散}
+    100回の独立なシミュレーションを行い，$t = 1000$における点の位置 $S_{1000}$ の平均値と分散を計算した．
+    
+    結果：
+    \begin{itemize}
+        \item 平均値： -1.080
+        \item 分散： 1067.954
+    \end{itemize}
+    
+    \subsection*{考察}
+    \begin{itemize}
+        \item \textbf{平均値について}: 理論的には，ランダムウォークの各ステップが独立であり，正負の方向に等確率で進むため，長期的な期待値は0となる．シミュレーション結果の平均値も0の近傍にあることから，矛盾しない．
+        \item \textbf{分散について}: 理論的には，ランダムウォークの分散はステップ数に比例し，分散は $t \cdot d^2$ となる．今回のシミュレーションでは，$d = 1$であり，$t = 1000$のとき，分散は理論的には1000となる．シミュレーション結果の分散もこれに非常に近い値であるため，理論的な予測が正しいことが確認できた．
+        ただし，$d$ をステップ毎の移動距離とする．
+        \item \textbf{シミュレーションの信頼性について}: ランダムウォークのシミュレーション結果は理論的な期待値および分散と一致しており，このシミュレーション手法が信頼できるものであることがわかる．これにより，ランダムウォークを用いた複雑な現象のモデル化や解析が信頼性を持って行えることが示された．
+    \end{itemize}
+    
+    これらの考察から，シミュレーションが理論的な予測と一致しており，乱数生成の品質が高いことが確認できた．ランダムウォークのモデルは，様々な分野における確率的現象の解析に有用であり，実験結果はその有効性を示しているといえる．
+    
+  \newpage
 
-      int lexan();
-      void parse();
-      void stmt();
-      void stmt_list();
-      void expr();
-      void term();
-      void factor();
-      void cond();
-      void match(int);
-      void emit(int, int);
-      int lookup(char[]);
-      int insert(char[], int);
-      void init();
-      void error(char*);
+  \section*{おわりに}
 
+    様々なシミュレーションをコンピュータを用いて行うには，期待する分布に従った乱数生成の手法が必要不可欠であることがわかった．
+    
+    また，乱数生成の品質がシミュレーション結果に大きな影響を与えるということを理解することができた．
 
-      // lexer.c
-      char lexbuf[BSIZE];
-      int lineno = 1;
-      int tokenval = NONE;
+  \newpage
+  
+  \section*{参考文献}
 
-      int lexan()
-      {
-        int t;
-        while(1) {
-          t = getchar();
-          if (t == ' ' || t == '\t')
-            ;
-          else if ( t == '\n')
-            lineno = lineno + 1;
-          else if (t == ':') {
-            if (getchar() == '=') {
-              return ASSIGN;
-            }
-          }
-          else if (isdigit(t)) {
-            ungetc(t, stdin);
-            scanf("%d", &tokenval);    // for gcc
-            //scanf_s("%d", &tokenval);    // for Visual Studio
-            return NUM;
-          }
-          else if (isalpha(t)) {
-            int p,b = 0;
-            while (isalnum(t)) {
-              lexbuf[b] = t;
-              t = getchar();
-              b = b + 1;
-              if (b >= BSIZE)
-                error("compiler error");
-            }
-            lexbuf[b] = EOS;
-            if (t !=EOF)
-              ungetc(t, stdin);
-            p = lookup(lexbuf);
-            if (p == 0)
-              p = insert(lexbuf, ID);
-            tokenval = p;
-            return symtable[p].token;
-          }
-          else if (t == EOF)
-            return DONE;
-          else {
-            tokenval = NONE;
-            return t;
-          }
-        }
-      }
-
-
-      // parser.c
-      int lookahead;
-
-      void parse()
-      {
-        // 1 トークン分読んで型が代入される
-        lookahead = lexan();
-        while (lookahead != DONE) {
-          stmt(); match(';');
-        }
-      }
-
-      // statement
-      void stmt()
-      {
-        // 文の解析を行う
-        // それぞれ 1 つ目の文字に引っかかったら次の文字を読み込む
-        switch (lookahead) {
-        case ID: // 代入文の翻訳
-          printf("lvalue\t"); // "lvalue" は左辺値のこと
-          emit(ID, tokenval); // 出力関数を呼び出し
-          match(lookahead); // 先読み
-          if (lookahead == ASSIGN) {
-            match(lookahead); // 先読み
-            // 代入文の右辺の式を解析
-            expr();
-            printf(":=\n");
-          }
-          break;
-        
-        case WHILE: // while 文の翻訳
-          match(WHILE);
-          printf("label\ttest\n");
-          cond();
-          printf("gofalse\tout\n");
-          match(DO);
-          stmt();
-          printf("goto\ttest\n");
-          printf("label\tout\n");
-          break;
-
-        case BEGIN:
-          match(BEGIN);
-          stmt();
-          while (lookahead != END) {
-            match(lookahead); // 先読み
-            stmt();
-          }
-          match(END);
-          break;
-
-        default:
-          break;
-        }
-      }
-
-      void expr()
-      {
-        int t;
-        term();
-        while(1)
-          switch (lookahead) {
-          case '+': case '-':
-            t = lookahead;
-            match(lookahead); term(); emit(t, NONE);
-            continue;
-          default:
-            return;
-          }
-      }
-
-      void term()
-      {
-        int t;
-        factor();
-        while(1)
-          switch (lookahead) {
-          case '*': case '/': case DIV: case MOD:
-            t = lookahead;
-            match(lookahead);
-            factor();
-            emit(t, NONE);
-            continue;
-          default:
-            return;
-          }
-      }
-
-      void factor()
-      {
-        switch(lookahead) {
-          case '(':
-            match('('); expr(); match(')'); break;
-          case NUM:
-            printf("push\t");
-            emit(NUM, tokenval); match(NUM); break;
-          case ID:
-            printf("rvalue\t");
-            emit(ID, tokenval);
-            match(ID);
-            break;
-          default:
-            error("syntax error"); break;
-        }
-      }
-
-      void cond()
-      {
-        int t;
-        expr();
-        
-        switch (lookahead)
-        {
-        case '<': case '>': case '=':
-          t = lookahead;
-          match(lookahead);
-          expr();
-          emit(t, NONE);
-          break;
-        default:
-          break;
-        }
-        return;
-      }
-
-      // 現在の先読みトークンが t と一致するかどうかを確認し, 次の先読みトークンを読み込む
-      void match(t)
-        int t;
-      {
-        if (lookahead == t)
-          lookahead = lexan();
-        else error("syntax error");
-      }
-
-
-      // emitter.c
-      void emit(t, tval)
-        int t, tval;
-      {
-        switch(t) {
-          case '+': case '-': case '*': case '/': case '<': case '>': case '=':
-            printf("%c\n", t); break;
-          case DIV:
-            printf("DIV\n"); break;
-          case MOD:
-            printf("MOD\n"); break;
-          case NUM:
-            printf("%d\n", tval); break;
-          case ID:
-            printf("%s\n", symtable[tval].lexptr); break;
-          default:
-            printf("token %d, tokenval %d\n", t, tval); break;
-        }
-      }
-
-
-      // symbol.c
-      #define STRMAX	999
-      #define SYMMAX	100
-
-      char lexemes[STRMAX];
-      int lastchar = -1;
-      struct entry symtable[SYMMAX];
-      int lastentry = 0;
-
-      int lookup(s)
-        char s[];
-      {
-        int p;
-        for (p = lastentry; p > 0; p = p -1)
-          if (strcmp(symtable[p].lexptr, s) == 0)
-            return p;
-        return 0;
-      }
-
-      int insert(s, tok)
-        char s[];
-        int tok;
-      {
-        int len;
-        len = strlen(s);
-        if (lastentry +1 >= SYMMAX)
-          error("symbol table full");
-        if (lastchar + len +1 >= STRMAX)
-          error("lexemes array full");
-        lastentry = lastentry +1;
-        symtable[lastentry].token = tok;
-        symtable[lastentry].lexptr = &lexemes[lastchar + 1];
-        lastchar = lastchar + len + 1;
-        strcpy(symtable[lastentry].lexptr, s);
-        return lastentry;
-      }
-
-
-      // init.c
-      struct entry keywords[] = {
-        "div", DIV,
-        "mod", MOD,
-        "while", WHILE,
-        "do", DO,
-        "begin", BEGIN,
-        "end", END,
-        0, 0
-      };
-
-      void init()
-      {
-        struct entry *p;
-        for (p = keywords; p -> token; p++)
-          insert(p -> lexptr, p -> token);
-      }
-
-
-      // error.c
-      void error(m)
-        char *m;
-      {
-        fprintf(stderr, "line %d: %s\n", lineno, m);
-        exit(1);
-      }
-
-
-      // main.c
-      void main()
-      {
-        init();
-        parse();
-        exit(0);
-      }
-
-    \end{lstlisting}
+    \begin{itemize}
+        \item Learn Rust - Rust Programming Language: \url{https://www.rust-lang.org/learn} (accessed: May 22, 2024)
+    \end{itemize}
 
 \end{document}
