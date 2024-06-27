@@ -4,6 +4,8 @@ import math
 import numpy as np
 import time
 
+CONTOUR_AREA_THRESHOLD = 400
+
 def prepare_camera(camera_id, fps, width, height):
     cap = cv2.VideoCapture(camera_id)
     if not cap.isOpened():
@@ -37,7 +39,7 @@ class Buffer():
             writer.writerows(self.data)
 
 
-def detect_marker(contours, contour_threshold=400):
+def detect_marker(contours):
     # 画像モーメントをもとに、マーカーの座標を計算
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
@@ -45,7 +47,7 @@ def detect_marker(contours, contour_threshold=400):
         mu = cv2.moments(largest_contour)
         # 面積
         s = cv2.contourArea(largest_contour)
-        if mu["m00"] > 0 and s > contour_threshold:
+        if mu["m00"] > 0 and s > CONTOUR_AREA_THRESHOLD:
             # モーメントからu,v座標を計算
             u, v = int(mu["m10"] / mu["m00"]) , int(mu["m01"] / mu["m00"])
             r_dot = round(math.sqrt(s/math.pi), 2) #半径
@@ -63,8 +65,6 @@ def main_loop(cap, threshold, params):
     # grids
     grid_interval_x = 20
     grid_interval_y = 20
-    # theashold
-    contour_threshold = 400
 
     while True:
         # キーボード入力を受付
@@ -80,7 +80,7 @@ def main_loop(cap, threshold, params):
             if not recording:
                 print('start recording')
                 # バッファーを初期化
-                buffer = Buffer(['u', 'v'])
+                buffer = Buffer(['u', 'v', 'r', 'num_contours', 'threshold'])
                 recording = True
             else:
                 print('saving finished')
@@ -90,11 +90,15 @@ def main_loop(cap, threshold, params):
         # TODO (他のキー操作)
         # 閾値 (theashold) を変更
         elif key == ord('z'):
-            if contour_threshold - 1 > 0:
-                contour_threshold -= 1
+            if threshold is None:
+                threshold = 128
+            elif threshold - 1 > 0:
+                threshold -= 1
         elif key == ord('x'):
-            if contour_threshold + 1 < 10000:
-                contour_threshold += 1
+            if threshold is None:
+                threshold = 128
+            elif threshold + 1 < 10000:
+                threshold += 1
 
         # 矢印キー操作
         elif key == ord('i'):  # 上矢印キー
@@ -124,7 +128,7 @@ def main_loop(cap, threshold, params):
         # 輪郭検出
         contours, hierarchy = cv2.findContours(binary_frame, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         # 座標計算
-        u, v, s, r_dot = detect_marker(contours, contour_threshold)
+        u, v, s, r_dot = detect_marker(contours)
             
         # TODO (x, y, zの計算）
         # 分母の０で，プログラムがフリーズになることに注意
@@ -134,8 +138,10 @@ def main_loop(cap, threshold, params):
             
         if recording:
             # 時刻や座標をバッファに保存
-            buffer.append(u=u, v=v)
-            pass
+            if threshold is not None:
+                buffer.append(u=u, v=v, r=r_dot, num_contours=len(contours), threshold=threshold)
+            else:
+                buffer.append(u=u, v=v, r=r_dot, num_contours=len(contours), threshold=th)
         
         if image_mode == 0:
             show_img = frame
