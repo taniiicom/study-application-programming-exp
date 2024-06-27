@@ -4,8 +4,6 @@ import math
 import numpy as np
 import time
 
-CONTOUR_AREA_THRESHOLD = 400
-
 def prepare_camera(camera_id, fps, width, height):
     cap = cv2.VideoCapture(camera_id)
     if not cap.isOpened():
@@ -39,7 +37,7 @@ class Buffer():
             writer.writerows(self.data)
 
 
-def detect_marker(contours):
+def detect_marker(contours, contour_threshold=400):
     # 画像モーメントをもとに、マーカーの座標を計算
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
@@ -47,7 +45,7 @@ def detect_marker(contours):
         mu = cv2.moments(largest_contour)
         # 面積
         s = cv2.contourArea(largest_contour)
-        if mu["m00"] > 0 and s > CONTOUR_AREA_THRESHOLD:
+        if mu["m00"] > 0 and s > contour_threshold:
             # モーメントからu,v座標を計算
             u, v = int(mu["m10"] / mu["m00"]) , int(mu["m01"] / mu["m00"])
             r_dot = round(math.sqrt(s/math.pi), 2) #半径
@@ -60,6 +58,13 @@ def main_loop(cap, threshold, params):
     CAMERA_WIDTH, CAMERA_HEIGHT = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     recording = False
+
+    # vars
+    # grids
+    grid_interval_x = 20
+    grid_interval_y = 20
+    # theashold
+    contour_threshold = 400
 
     while True:
         # キーボード入力を受付
@@ -83,6 +88,27 @@ def main_loop(cap, threshold, params):
                 buffer.dump()
                 recording = False
         # TODO (他のキー操作)
+        # 閾値 (theashold) を変更
+        elif key == ord('z'):
+            if contour_threshold - 1 > 0:
+                contour_threshold -= 1
+        elif key == ord('x'):
+            if contour_threshold + 1 < 10000:
+                contour_threshold += 1
+
+        # 矢印キー操作
+        elif key == ord('i'):  # 上矢印キー
+            if grid_interval_y + 5 < int(CAMERA_HEIGHT):
+                grid_interval_y += 5
+        elif key == ord('k'):  # 下矢印キー
+            if grid_interval_y - 5 > 0:
+                grid_interval_y -= 5
+        elif key == ord('j'):  # 左矢印キー
+            if grid_interval_x - 5 > 0:
+                grid_interval_x -= 5
+        elif key == ord('l'):  # 右矢印キー
+            if grid_interval_x + 5 < int(CAMERA_WIDTH):
+                grid_interval_x += 5
         
         ret, frame = cap.read()
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -98,7 +124,7 @@ def main_loop(cap, threshold, params):
         # 輪郭検出
         contours, hierarchy = cv2.findContours(binary_frame, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         # 座標計算
-        u, v, s, r_dot = detect_marker(contours)
+        u, v, s, r_dot = detect_marker(contours, contour_threshold)
             
         # TODO (x, y, zの計算）
         # 分母の０で，プログラムがフリーズになることに注意
@@ -121,9 +147,19 @@ def main_loop(cap, threshold, params):
             show_img = binary_frame
             point_color = 128 
         
+        # theashold
+        cv2.putText(show_img, "theashold: " + str(threshold) + " [z: down, x: up]", (20,20), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), 1, cv2.LINE_AA)
+
+        # grids
+        cv2.putText(show_img, "grid: (" + str(grid_interval_x) + ", " + str(grid_interval_y) + ") [i,k,j,l]", (20,40), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), 1, cv2.LINE_AA)
+        for i in range(0, int(CAMERA_WIDTH), grid_interval_x):
+            cv2.line(show_img,(i,0),(i,int(CAMERA_HEIGHT)),(255,0,0),1)
+        for i in range(0, int(CAMERA_HEIGHT), grid_interval_y):
+            cv2.line(show_img,(0,i),(int(CAMERA_WIDTH),i),(255,0,0),1)
+
         # draw line
-        cv2.line(show_img,(0,20),(640,20),(255,0,0),1)
-        cv2.line(show_img,(60,0),(60,320),(255,0,0),1)
+        # cv2.line(show_img,(0,20),(640,20),(255,0,0),1)
+        # cv2.line(show_img,(60,0),(60,320),(255,0,0),1)
 
         # show detection info
         cv2.circle(show_img, (u, v), 6, point_color, -1)
