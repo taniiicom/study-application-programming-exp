@@ -9,6 +9,7 @@
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{hyperref}
+\usepackage{breakurl} % url の overflow 分の折り返し
 \usepackage[subrefformat=parens]{subcaption}
 \lstset{
   basicstyle={\ttfamily},
@@ -46,36 +47,40 @@
       {\Huge 2024年度\\応用プログラミング実験}
       
       \vspace{4cm}
-      {\Huge 第9-11回\\デジタル信号処理\\
+      {\Huge 第12-14回\\人間情報学\\
         実験レポート\\
       }
       \vspace{4cm}
       {\large 学修番号: 22140026\\谷 知拓 - Tomohiro Tani\footnote{東京都立大学 システムデザイン学部 情報科学科 \\ mail@taniii.com} \\}
       \vspace{0.5cm}
       {\large
-        第1回レポート提出日 : 2024-06-12 \\
+        第1回レポート提出日 : 2024-07-04 \\
+        第2回レポート提出日 : 2024-07-11 \\
+        第3回レポート提出日 : 2024-07-18 \\
       }
     \end{center}
   \end{titlepage}
 
   \section*{はじめに}
 
-    本レポートでは，『応用プログラミング実験』第9-11回デジタル信号処理の実施報告を行う．
+    本レポートでは，『応用プログラミング実験』第12-14回人間情報学の実施報告を行う．
 
   \subsection*{実験の概要}
 
-    本実験では，デジタル信号処理について学ぶ．
-    以下の課題に取り組み，その結果を報告する．
+    本実験では，カメラから得られた画像を用いて，実空間座標を求め，空間での運動を追跡することを目指す．
+    以下の実験および課題に取り組み，その結果を報告する．
 
     \begin{enumerate}
-      \item 課題1-1: 1Hz 正弦波
-      \item 課題1-2: 周波数変化
-      \item 課題1-3: 振幅変化
-      \item 課題1-4: 周波数および位相変化
-      \item 課題1-5: 直流変化
-      \item 課題1-6: 信号の加算
-      \item 課題1-7: 非周期信号
-      \item 課題1-A: 追加課題
+      \item 実験1
+        \subitem 課題1-1
+        \subitem 課題1-2
+      \item 実験2
+        \subitem 課題2-1
+        \subitem 課題2-2
+      \item 実験3
+        \subitem 課題3-1
+        \subitem 課題3-2
+      
     \end{enumerate}
 
   \subsection*{実験環境}
@@ -91,343 +96,445 @@
     \end{itemize}
 
   \newpage
-  \section*{課題1-1: 1Hz 正弦波}
 
-    条件は次の通りである．
+  \section*{実験1}
 
-    \begin{itemize}
-      \item $T_0 = 1 [\mathrm{sec}]$
-      \item $A = 1$
-      \item $\theta = 1 [\mathrm{rad}]$
-      \item $D = 0$
-    \end{itemize}
+  \section*{課題1-1}
 
-    図 \ref{fig:s1} は，周期アナログ信号 $x_{T_0}(t)=A \sin \left(2 \pi F_0 t+\theta\right)+D$ および，その信号を標本化した離散時間信号 $x[n]$ をプロットしたものである．
+    \subsection*{A-1}
+
+      \begin{quote}
+        画像の二値化と画像のモーメントについて述べよ.
+      \end{quote}
+
+      画像の二値化とは，グレースケール画像を黒と白の2値画像に変換する処理である．このプロセスでは，各ピクセルの輝度値が指定された閾値を基準にして，その値が閾値以上であれば白，以下であれば黒に設定され，最終的に各画素は, 0 または最大値のいずれかの値を持つ．
+
+      モーメントは，画像の統計的な特徴量のことである．これにより，画像の形状や分布を数学的に表現することが可能になる．画像モーメントにはいくつかの種類があり，中央モーメントや正規化モーメントなどがある．これらは画像の特徴を定量的に記述し，物体認識や画像分類に応用される．特に，輪郭の重心や面積，慣性モーメントなどを計算することが可能である．
+
+    \subsection*{A-2}
+
+      \begin{quote}
+        球体マーカを背景紙の前に置き, キーボードの操作で閾値を変更し, 二値化画像の変化（Contour の数やノイズなど）について考察せよ. また, コントラストが最も強くなった閾値をレポートに記述すること.
+      \end{quote}
+
+      \subsubsection*{実装}
+
+        キーボードの操作 (z: down, x: up) で閾値を変更できるようにし, 水平方向，垂直方向のそれぞれについて，グリッドを表示し，その間隔を i, k, j, l で操作できるようにした．
+
+        閾値は，5 単位で変更できるようにした．
+      
+      \subsubsection*{結果}
+
+        閾値を変更することにより，二値化画像の変化が見られた．
+
+        次の，図 \ref{fig:s2}，図 \ref{fig:s3} は，それぞれ閾値 $theashold = 21$ および $theashold = 80$ のときの画像の二値化結果である．
+
+        また，コントラストが最も強くなり，球体マーカの境界がもっとも明瞭になった閾値は，$theashold = 80$ であった．
     
-    続いて，離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$ を求めた．
-    
-    図 \ref{fign:a1} は，振幅スペクトル $|X[k]|$ を，図 \ref{fign:p1} は，位相スペクトル $\angle X[k][\mathrm{rad}]$ を示している．
-
-    表 \ref{tab:1} は，周波数インデクス $k$ と各変数の対応表である．
-
-    \begin{figure}[!h]
-      \centering
-      \includegraphics[width=0.6\textwidth]{sampling_experiment_1.png}
-      \caption{周期アナログ信号 $x_{T_0}(t)$ とその信号を標本化した離散時間信号 $x[n]$}
-      \label{fig:s1}
-    \end{figure}
-
-    \begin{figure}[h]
-      \begin{center}
-      \begin{minipage}[t]{0.48\columnwidth}
-          \includegraphics[width=\columnwidth]{amplitude_spectrum_experiment_1.png}
-          \subcaption{振幅スペクトル $|X[k]|$}
-          \label{fign:a1}
-      \end{minipage}
-      \begin{minipage}[t]{0.48\columnwidth}
-          \includegraphics[width=\columnwidth]{phase_spectrum_experiment_1.png}
-          \subcaption{位相スペクトル $\angle X[k][\mathrm{rad}]$}
-          \label{fign:p1}
-      \end{minipage}
-      \end{center}
-      \caption{離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$}
-    \end{figure}
-
-    \begin{table}[!h]
-      \centering
-      \caption{周波数インデクス $k$ と各変数の対応表}
-      \begin{tabular}{c|c|c|c|c|c|c|c|c}
-        k & 0.0 & 1.0 & 2.0 & 3.0 & 4.0 & 5.0 & 6.0 & 7.0 \\
-        \hline
-        ω [rad] & 0.000000 & 0.785398 & 1.570796 & 2.356194 & 3.141593 & 3.926991 & 4.712389 & 5.497787 \\
-        f & 0.000 & 0.125 & 0.250 & 0.375 & 0.500 & 0.625 & 0.750 & 0.875 \\
-        Ω [rad/sec] & 0.000000 & 0.098175 & 0.196350 & 0.294524 & 0.392699 & 0.490874 & 0.589049 & 0.687223 \\
-        F [Hz] & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 
-      \end{tabular}
-      \label{tab:1}
-    \end{table}
-
+        \begin{figure}[!h]
+          \centering
+          \includegraphics[width=0.6\textwidth]{ex1_2.png}
+          \caption{閾値 $theashold = 21$ のときの画像の二値化結果}
+          \label{fig:s2}
+        \end{figure}
   
+        \begin{figure}[!h]
+          \centering
+          \includegraphics[width=0.6\textwidth]{ex1_3.png}
+          \caption{閾値 $theashold = 80$ のときの画像の二値化結果}
+          \label{fig:s3}
+        \end{figure}
+
+    \subsection*{A-3}
+
+      \begin{quote}
+        判別分析手法によって, 閾値を自動で決めることができる. この手法について説明せよ.
+      \end{quote}
+
+      判別分析法は，大津の二値化とも呼ばれ，画像のヒストグラムを用いて，最適な閾値を自動的に決定する手法である．
+
+      \quad
+
+      まず, 画像の全ピクセル数を $N$, ピクセル値の範囲を $[0, L-1]$ とする. 各ピクセル値 $i$ の出現数を $n_i$, 出現確率を $p_i$ とすると,
+      
+      \begin{equation}
+      p_i = \frac{n_i}{N}
+      \end{equation}
+
+      閾値 $t$ によって画像を2つのクラス（クラス1: $C_1$, クラス2: $C_2$）に分ける. クラス1にはピクセル値が $[0, t]$ のピクセルが, クラス2にはピクセル値が $[t+1, L-1]$ のピクセルが属する.
+
+      クラス1とクラス2の出現確率 $\omega_1(t)$ と $\omega_2(t)$ は,
+      \begin{align}
+      \omega_1(t) &= \sum_{i=0}^{t} p_i \\
+      \omega_2(t) &= \sum_{i=t+1}^{L-1} p_i
+      \end{align}
+
+      クラス1とクラス2の平均値 $\mu_1(t)$ と $\mu_2(t)$ は,
+      \begin{align}
+      \mu_1(t) &= \frac{1}{\omega_1(t)} \sum_{i=0}^{t} i \, p_i \\
+      \mu_2(t) &= \frac{1}{\omega_2(t)} \sum_{i=t+1}^{L-1} i \, p_i
+      \end{align}
+
+      全体の平均値 $\mu_T$ は,
+      \begin{equation}
+      \mu_T = \sum_{i=0}^{L-1} i \, p_i
+      \end{equation}
+
+      クラス間分散 $\sigma_B^2(t)$ は,
+      \begin{equation}
+      \sigma_B^2(t) = \omega_1(t) \omega_2(t) [\mu_1(t) - \mu_2(t)]^2
+      \end{equation}
+
+      このクラス間分散 $\sigma_B^2(t)$ が最大となる閾値 $t$ を求める.
+
+      この $t$ が，判別分析法によって求められた最適な閾値である．
+
+    \subsection*{A-4}
+      
+      \begin{quote}
+        \texttt{cv2.threshold(grayFrame, 0, 255, cv2.THRESH\_OTSU)}の関数で決めた閾値を, A-2 で決めた閾値と比較し, 考察せよ.
+      \end{quote}
+
+      \subsubsection*{実装}
+
+        キーボード入力により，特定の値を指定しない場合，判別分析法によって求められた最適な閾値を用いるようにした．
+
+      \subsubsection*{結果}
+
+        図 \ref{fig:s1} は，判別分析法によって求められた最適な閾値である $theashold = 85$ のときの画像の二値化結果である．
+
+        A-2 の結果と比較すると，閾値を 5 単位で変更できるようにした手動の方法で得られた最適な閾値の場合の画像の二値化結果と比較しても，判別分析法によって求められた閾値の方が，球体マーカの境界がより明瞭になっていることがわかる．
+        
+        \begin{figure}[!h]
+          \centering
+          \includegraphics[width=0.6\textwidth]{ex1_1.png}
+          \caption{大津の二値化による画像の二値化結果}
+          \label{fig:s1}
+        \end{figure}
+
+    \subsection*{A-5}
+
+      \begin{quote}
+        球体マーカを背景紙の前に置いたままで, 計測の経過時間 \( t \), マーカの位置\( (u, v) \)とマーカの半径を csvファイルに保存し, ノイズについて述べよ. ただし, 経過時間の単位は ms とし, マーカの位置と半径の単位は, ピクセルとする.
+      \end{quote}
+
+      \subsubsection*{実装}
+
+        球体マーカの位置 \( (u, v) \) とマーカの半径を記憶し，csv ファイルに保存するプログラムを実装した．
+
+      \subsubsection*{結果}
+
+        計測の結果， $t = 0 [ms]$ から $t = 9202.145099639893 [ms]$ までで，$275$ フレームのデータが csv で得られた．
+
+        表 \ref{table:1} に，csv ファイルの最初の10行を示す．
+
+        csv の全部については，以下のリンクに公開した．
+
+        \url{https://raw.githubusercontent.com/taniiicom/study-application-programming-exp/main/human-informatics/src/log_A-5.csv}
+
+        \begin{table}[ht]
+          \centering
+          \caption{A-5 で得られた csv ファイルの最初の10行}
+          \label{table:1}
+          \begin{tabular}{ccccccc}
+          \hline
+          t & u & v & x & y & z & r \\
+          \hline
+          27.421951 & 256 & 361 & -1.974363 & -3.903562 & 15.485203 \\
+          61.939001 & 256 & 361 & -1.975723 & -3.906250 & 15.495868 \\
+          95.342159 & 256 & 361 & -1.973684 & -3.902219 & 15.479876 \\
+          129.111052 & 256 & 361 & -1.972327 & -3.899536 & 15.469233 \\
+          159.833193 & 256 & 361 & -1.971649 & -3.898196 & 15.463918 \\
+          193.060101 & 256 & 361 & -1.971649 & -3.898196 & 15.463918 \\
+          227.514844 & 256 & 361 & -1.970971 & -3.896856 & 15.458603 \\
+          261.221570 & 256 & 361 & -1.970971 & -3.896856 & 15.458603 \\
+          294.346276 & 256 & 361 & -1.972327 & -3.899536 & 15.469233 \\
+          327.811231 & 256 & 361 & -1.972327 & -3.899536 & 15.469233 \\
+          \hline
+          \end{tabular}
+        \end{table}
+
+        続いて，得られた csv から，$u, v, r$ それぞれの，平均値，分散，範囲を求めた．
+
+        その結果を表 \ref{table:2} に示す．
+
+        \begin{table}[ht]
+          \centering
+          \caption{A-5 で得られた csv ファイルの統計量}
+          \label{table:2}
+          \begin{tabular}{cccc}
+          \hline
+          & 平均値 & 分散 & 範囲 \\
+          \hline
+          \( u [px]\) & 256.0 & 0.0 & 0.0 \\
+          \( v [px]\) & 361.0 & 0.0 & 0.0 \\
+          \( r [px]\) & 29.095766423357663 & 0.00019739579155639078 & (29.04, 29.13) \\
+          \hline
+          \end{tabular}
+        \end{table}
+
+      \subsubsection*{考察}
+
+        結果より，\( u, v \) については，平均値がそれぞれ \( 256.0, 361.0 [px] \) であり，分散が \( 0.0 \) であることから，ノイズがないことがわかる．
+
+        一方の，\( r \) についても，分散が \( 0.00019739579155639078 [px]\) と，極めて小さく，ノイズがほとんどないことがわかる．
+
+        このことから，この実験環境は，カメラやマーカの位置の計測において，非常に安定している環境であるといえる．
+
+  \section*{課題1-2}
+
+    \subsection*{B-1}
+
+      \begin{quote}
+        正方形マーカを背景紙の前に置き, キーボードの操作で閾値 \( L_{\text{th}} \) と \( H_{\text{th}} \) を変更し, エッジ検出画像 (edge image) の変化について観察せよ. また, マーカのエッジの線が良く現れるようにそれぞれの閾値を決めておく. 綺麗な背景において, 変化がほとんど見られないことがある.
+      \end{quote}
+
+      \subsubsection*{実装}
+
+        キーボードの操作で，\( L_{\text{th}} \) と \( H_{\text{th}} \) をそれぞれ変更できるようにした．
+
+      \subsubsection*{結果}
+
+        閾値 \( L_{\text{th}} = 0 \) および \( H_{\text{th}} = 100 \) のときのエッジ検出画像を図 \ref{fig:s4} に示す．
+
+        また，閾値 \( L_{\text{th}} = 100 \) および \( H_{\text{th}} = 200 \) のときのエッジ検出画像を図 \ref{fig:s5} に示す．
+
+        この結果より，エッジ検出画像は，閾値 \( L_{\text{th}} \) および \( H_{\text{th}} \) に関係なく，正方形マーカのエッジが綺麗に検出されており，その形状はほとんど変化しないことがわかる．
+
+        \begin{figure}[!h]
+          \centering
+          \includegraphics[width=0.6\textwidth]{B-1-high-1.png}
+          \caption{閾値 \( L_{\text{th}} = 0 \) および \( H_{\text{th}} = 100 \) のときのエッジ検出画像}
+          \label{fig:s4}
+        \end{figure}
+
+        \begin{figure}[!h]
+          \centering
+          \includegraphics[width=0.6\textwidth]{B-1-high-2.png}
+          \caption{閾値 \( L_{\text{th}} = 100 \) および \( H_{\text{th}} = 200 \) のときのエッジ検出画像}
+          \label{fig:s5}
+        \end{figure}
+
+      \subsubsection*{考察}
+
+        結果より，正方形マーカのエッジは，綺麗に検出されており，その形状は閾値の変化に関わらずほとんど変化しないことがわかる．
+
+        このことから，この実験環境は，カメラやマーカの位置の計測において，非常に安定している環境であるといえる．
+
+    \subsection*{B-2}
+
+      \begin{quote}
+        Hough変換について説明せよ.
+      \end{quote}
+
+      Hough 変換は画像中の直線を検出する手法であり，エッジ検出で得られた画像から直線を検出する．
+      
+      Hough 変換は極座標系を用いて，検出された各エッジ点に対して，その点を通るあらゆる直線を考える．
+      
+      すべてのエッジ点で同様の操作を行い，考えられる直線について，投票数が閾値を超えるパラメータを持つ直線を検出する方式である．
+      
+    \subsection*{B-3}
+
+      \begin{quote}
+        Hough変換関数のパラメータの \( hough\_threshold \) を変更することで, 検出直線の数を観察し説明せよ.
+      \end{quote}
+
+      閾値 \( L_{\text{th}} = 0 \) および \( H_{\text{th}} = 100 \) のときのエッジ検出画像を図 \ref{fig:s4} に示す．
+
+      また，閾値 \( L_{\text{th}} = 100 \) および \( H_{\text{th}} = 200 \) のときのエッジ検出画像を図 \ref{fig:s5} に示す．
+
+      この結果より，エッジ検出画像は，閾値 \( L_{\text{th}} \) および \( H_{\text{th}} \) に関係なく，正方形マーカのエッジが綺麗に検出されており，その形状はほとんど変化しないことがわかる．
+
+      \begin{figure}[h]
+        \begin{center}
+        \begin{minipage}[t]{0.48\columnwidth}
+            \includegraphics[width=\columnwidth]{B-3-0.png}
+            \subcaption{\( hough\_threshold = 10 \)}
+            \label{fign:s5}
+        \end{minipage}
+        \begin{minipage}[t]{0.48\columnwidth}
+            \includegraphics[width=\columnwidth]{B-3-1.png}
+            \subcaption{\( hough\_threshold = 30 \)}
+            \label{fign:s6}
+        \end{minipage}
+        \end{center}
+        \begin{center}
+          \begin{minipage}[t]{0.48\columnwidth}
+              \includegraphics[width=\columnwidth]{B-3-2.png}
+              \subcaption{\( hough\_threshold = 80 \)}
+              \label{fign:s7}
+          \end{minipage}
+          \begin{minipage}[t]{0.48\columnwidth}
+              \includegraphics[width=\columnwidth]{B-3-3.png}
+              \subcaption{\( hough\_threshold = 90 \)}
+              \label{fign:s8}
+          \end{minipage}
+        \end{center}
+        \begin{center}
+          \begin{minipage}[t]{0.48\columnwidth}
+              \includegraphics[width=\columnwidth]{B-3-4.png}
+              \subcaption{\( hough\_threshold = 110 \)}
+              \label{fign:s9}
+          \end{minipage}
+          \begin{minipage}[t]{0.48\columnwidth}
+              \includegraphics[width=\columnwidth]{B-3-5.png}
+              \subcaption{\( hough\_threshold = 130 \)}
+              \label{fign:s10}
+          \end{minipage}
+        \end{center}
+        \caption{Hough 変換により検出された直線}
+      \end{figure}
+
+      
+
   \newpage
-  \section*{課題1-2: 周波数変化}
 
-  条件は次の通りである．
+  \section*{実験2}
 
-  \begin{itemize}
-    \item $T_0 = 1/2 [\mathrm{sec}]$
-    \item $A = 1$
-    \item $\theta = 0 [\mathrm{rad}]$
-    \item $D = 0$
-  \end{itemize}
+  \section*{課題2-1}
 
-  図 \ref{fig:s2} は，周期アナログ信号 $x_{T_0}(t)=A \sin \left(2 \pi F_0 t+\theta\right)+D$ および，その信号を標本化した離散時間信号 $x[n]$ をプロットしたものである．
+    \subsection*{C-1}
 
-  続いて，離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$ を求めた．
+      \begin{quote}
+        カメラから方眼紙までの距離 L を測れ.
+      \end{quote}
 
-  図 \ref{fign:a2} は，振幅スペクトル $|X[k]|$ を，図 \ref{fign:p2} は，位相スペクトル $\angle X[k][\mathrm{rad}]$ を示している．
+      $L = 20$ であった．
+      
+    \subsection*{C-2}
 
-  \begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{sampling_experiment_2.png}
-    \caption{周期アナログ信号 $x_{T_0}(t)$ とその信号を標本化した離散時間信号 $x[n]$}
-    \label{fig:s2}
-  \end{figure}
+      \begin{quote}
+        方眼紙上の撮影範囲の x 方向長さ Dx, y 方向長さ Dy を測れ. （ペンなどで, 四角形の角に薄くて小さなマークを付けてから測る）
+      \end{quote}
 
-  \begin{figure}[h]
-    \begin{center}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{amplitude_spectrum_experiment_2.png}
-        \subcaption{振幅スペクトル $|X[k]|$}
-        \label{fign:a2}
-    \end{minipage}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{phase_spectrum_experiment_2.png}
-        \subcaption{位相スペクトル $\angle X[k][\mathrm{rad}]$}
-        \label{fign:p2}
-    \end{minipage}
-    \end{center}
-    \caption{離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$}
-  \end{figure}
+      $D_x = 25.5$ ，$D_y = 20$ であった．
 
-  \newpage
+    \subsection*{C-3}
 
-  \section*{課題1-3: 振幅変化}
-    
-  条件は次の通りである．
+      \begin{quote}
+        \( L \), \( D_x \), \( D_y \) より, カメラの水平画角 \( \theta \), 垂直画角 \( \phi \), \( f_x \), \( f_y \)を求めよ.
+      \end{quote}
 
-  \begin{itemize}
-    \item $T_0 = 1 [\mathrm{sec}]$
-    \item $A = 2$
-    \item $\theta = 0 [\mathrm{rad}]$
-    \item $D = 0$
-  \end{itemize}
+      C-1，C-2 より，$ L = 20$ ，$D_x = 25.5$ ，$D_y = 20$ である．
 
-  図 \ref{fig:s3} は，周期アナログ信号 $x_{T_0}(t)=A \sin \left(2 \pi F_0 t+\theta\right)+D$ および，その信号を標本化した離散時間信号 $x[n]$ をプロットしたものである．
+      これらより， $\theta$ および $\phi$ は次のように求められる．
 
-  続いて，離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$ を求めた．
+      \begin{align*}
+        \frac{\theta}{2} &= \tan^{-1} \left( \frac{12.75}{20} \right) \\
+        \theta &\approx 65.0^\circ \\
+        \\
+        \frac{\phi}{2} &= \tan^{-1} \left( \frac{10}{20} \right) \\
+        \frac{\phi}{2} &= \frac{1}{2} \\
+        \phi &\approx 53.3^\circ
+      \end{align*}
 
-  図 \ref{fign:a3} は，振幅スペクトル $|X[k]|$ を，図 \ref{fign:p3} は，位相スペクトル $\angle X[k][\mathrm{rad}]$ を示している．
+    次に，相似比を用いることにより，$f_x$ および $f_y$ を求める．
 
-  \begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{sampling_experiment_3.png}
-    \caption{周期アナログ信号 $x_{T_0}(t)$ とその信号を標本化した離散時間信号 $x[n]$}
-    \label{fig:s3}
-  \end{figure}
+    \begin{align*}
+      \frac{D_y}{2} \cdot L &= 240 \cdot f_y \\
+      \frac{D_x}{2} \cdot 320 &= L \cdot f_x \\
+    \end{align*}
 
-  \begin{figure}[h]
-    \begin{center}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{amplitude_spectrum_experiment_3.png}
-        \subcaption{振幅スペクトル $|X[k]|$}
-        \label{fign:a3}
-    \end{minipage}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{phase_spectrum_experiment_3.png}
-        \subcaption{位相スペクトル $\angle X[k][\mathrm{rad}]$}
-        \label{fign:p3}
-    \end{minipage}
-    \end{center}
-    \caption{離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$}
-  \end{figure}
+    したがって，
 
-  \newpage
+    \begin{align*}
+      f_x &= 502 \\
+      f_y &= 480 \\
+    \end{align*}
+      
+  \subsection*{C-4}
 
-  \section*{課題1-4: 周波数および位相変化}
+    \begin{quote}
+      方眼紙の一点をマークし, その点と, カメラのレンズ位置の 2 点を結ぶベクトルを求めよ. ただし, 実空間上のカメラのレンズ中央位置を, 座標系の原点とする.
+    \end{quote}
 
-  条件は次の通りである．
+    カメラのレンズ位置は，座標原点であり， \( (0, 0, 0) \) である．
 
-  \begin{itemize}
-    \item $T_0 = 1/2 [\mathrm{sec}]$
-    \item $A = 1$
-    \item $\theta = \pi [\mathrm{rad}]$
-    \item $D = 0$
-  \end{itemize}
+    方眼紙の一点をマークした座標は，\( (-8.5, -2.5, -20) \) である．
 
-  図 \ref{fig:s4} は，周期アナログ信号 $x_{T_0}(t)=A \sin \left(2 \pi F_0 t+\theta\right)+D$ および，その信号を標本化した離散時間信号 $x[n]$ をプロットしたものである．
+    ただし，3次元座標系には，左手系を採用している．
 
-  続いて，離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$ を求めた．
+    原点であるカメラのレンズ位置から，手前に向かう方向を正としている．
 
-  図 \ref{fign:a4} は，振幅スペクトル $|X[k]|$ を，図 \ref{fign:p4} は，位相スペクトル $\angle X[k][\mathrm{rad}]$ を示している．
+    したがって，ベクトルは次のように求められる．
 
-  \begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{sampling_experiment_4.png}
-    \caption{周期アナログ信号 $x_{T_0}(t)$ とその信号を標本化した離散時間信号 $x[n]$}
-    \label{fig:s4}
-  \end{figure}
+    \[
+      \begin{pmatrix}
+        -8.5 \\
+        -2.5 \\
+        -20
+      \end{pmatrix}
+    \]
 
-  \begin{figure}[h]
-    \begin{center}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{amplitude_spectrum_experiment_4.png}
-        \subcaption{振幅スペクトル $|X[k]|$}
-        \label{fign:a4}
-    \end{minipage}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{phase_spectrum_experiment_4.png}
-        \subcaption{位相スペクトル $\angle X[k][\mathrm{rad}]$}
-        \label{fign:p4}
-    \end{minipage}
-    \end{center}
-    \caption{離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$}
-  \end{figure}
+  \subsection*{C-5}
 
-  \newpage
+    \begin{quote}
+      式 4, 5, 6 より, PC ウィンドウ座標 \( (u, v) \)から空間座標\( (X, Y, Z) \)を求める式をつくり, プログラム内に実装せよ. また, 方眼紙にマークした点に球体マーカを置き（または黒い紙を貼り付け）, 実測値と PC での測定値を比較せよ.
+    \end{quote}
 
-  \section*{課題1-5: 直流変化}
+      \( (u, v) \) から \( (X, Y, Z) \) を求める．
 
-  条件は次の通りである．
+      まず，PC ウィンドウ座標 \( (u, v) \) を， PC ウィンドウの中心を原点，軸の方向を実空間座標にそろえた空間系での座標 \(u', v'\) に変換する．
 
-  \begin{itemize}
-    \item $T_0 = 1 [\mathrm{sec}]$
-    \item $A = 1$
-    \item $\theta = 0 [\mathrm{rad}]$
-    \item $D = 1$
-  \end{itemize}
+      \begin{align*}
+        u' &= u - 320 \\
+        v' &= 240 - v
+      \end{align*}
 
-  図 \ref{fig:s5} は，周期アナログ信号 $x_{T_0}(t)=A \sin \left(2 \pi F_0 t+\theta\right)+D$ および，その信号を標本化した離散時間信号 $x[n]$ をプロットしたものである．
+      本課題 (C) においては，マーカーは方眼紙の作る 2 次元平面上に置かれている．
 
-  続いて，離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$ を求めた．
+      よって，つねに \( Z = -L \) であるので，次のように \( X, Y \) を求めることができる．
 
-  図 \ref{fign:a5} は，振幅スペクトル $|X[k]|$ を，図 \ref{fign:p5} は，位相スペクトル $\angle X[k][\mathrm{rad}]$ を示している．
+      \begin{align*}
+        Z = -20 \\
+        X = \frac{Z}{f_x} \cdot u' \\
+        Y = \frac{Z}{f_y} \cdot v' \\
+      \end{align*}
 
-  \begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{sampling_experiment_5.png}
-    \caption{周期アナログ信号 $x_{T_0}(t)$ とその信号を標本化した離散時間信号 $x[n]$}
-    \label{fig:s5}
-  \end{figure}
+      これをプログラムに実装すると，次のようになる．ただし，プログラム上では，2 次元平面の場合と，3 次元空間の場合で， 求め方を分岐している．
 
-  \begin{figure}[h]
-    \begin{center}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{amplitude_spectrum_experiment_5.png}
-        \subcaption{振幅スペクトル $|X[k]|$}
-        \label{fign:a5}
-    \end{minipage}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{phase_spectrum_experiment_5.png}
-        \subcaption{位相スペクトル $\angle X[k][\mathrm{rad}]$}
-        \label{fign:p5}
-    \end{minipage}
-    \end{center}
-    \caption{離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$}
-  \end{figure}
+      \begin{lstlisting}[caption={\( X, Y, Z \) を求める},label={code:1}]
+        # 座標変換
+        u_p = u - (CAMERA_WIDTH/2)
+        v_p = - v + (CAMERA_HEIGHT/2)
+        
+        # 実世界空間の座標 (推定)
+        if r is not None and f is not None:
+            # 3 次元空間上
+            z = (f * r) / r_dot 
+            x = (z / fx) * u_p
+            y = (z / fy) * v_p
+        else:
+            # 2 次元平面上
+            x = (L / fx) * u_p
+            y = (L / fy) * v_p    
+            z = L   
+      \end{lstlisting}
 
-  \newpage
+      次に，実測値と PC での測定値を比較する．
 
-  \section*{課題1-6: 信号の加算}
+      このプログラムを用いて，方眼紙にマーカを置き，実測値と PC での測定値を比較した．
 
-  条件は次の通りである．
+      C-4 の通り，\( (-8.5, -2.5, -20) \) にma-ka-
 
-  \begin{itemize}
-    \item $T_0 = 1 [\mathrm{sec}]$
-  \end{itemize}
+  \subsection*{C-6}
 
-  図 \ref{fig:s6} は，周期アナログ信号 $a_{T_0}(t)=2 \sin (2 \pi t)+\sin (4 \pi t+\pi)$ および，その信号を標本化した離散時間信号 $a[n]$ をプロットしたものである．
 
-  続いて，離散時間信号 $a[n]$ の離散フーリエスペクトル $X[k]$ を求めた．
 
-  図 \ref{fign:a6} は，振幅スペクトル $|X[k]|$ を，図 \ref{fign:p6} は，位相スペクトル $\angle X[k][\mathrm{rad}]$ を示している．
 
-  \begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{sampling_experiment_6.png}
-    \caption{周期アナログ信号 $x_{T_0}(t)$ とその信号を標本化した離散時間信号 $x[n]$}
-    \label{fig:s6}
-  \end{figure}
-
-  \begin{figure}[h]
-    \begin{center}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{amplitude_spectrum_experiment_6.png}
-        \subcaption{振幅スペクトル $|X[k]|$}
-        \label{fign:a6}
-    \end{minipage}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{phase_spectrum_experiment_6.png}
-        \subcaption{位相スペクトル $\angle X[k][\mathrm{rad}]$}
-        \label{fign:p6}
-    \end{minipage}
-    \end{center}
-    \caption{離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$}
-  \end{figure}
-
-  \newpage
-
-  \section*{課題1-7: 非周期信号}
-
-  条件は次の通りである．
-
-  \begin{itemize}
-    \item $T_0 = 0.8 [\mathrm{sec}]$
-    \item $A = 1$
-    \item $\theta = 1 [\mathrm{rad}]$
-    \item $D = 0$
-  \end{itemize}
-
-  図 \ref{fig:s7} は，周期アナログ信号 $x_{T_0}(t)=A \sin \left(2 \pi F_0 t+\theta\right)+D$ および，その信号を標本化した離散時間信号 $x[n]$ をプロットしたものである．
-  
-  続いて，離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$ を求めた．
-  
-  図 \ref{fign:a7} は，振幅スペクトル $|X[k]|$ を，図 \ref{fign:p7} は，位相スペクトル $\angle X[k][\mathrm{rad}]$ を示している．
-
-  \begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6\textwidth]{sampling_experiment_7.png}
-    \caption{周期アナログ信号 $x_{T_0}(t)$ とその信号を標本化した離散時間信号 $x[n]$}
-    \label{fig:s7}
-  \end{figure}
-
-  \begin{figure}[h]
-    \begin{center}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{amplitude_spectrum_experiment_7.png}
-        \subcaption{振幅スペクトル $|X[k]|$}
-        \label{fign:a7}
-    \end{minipage}
-    \begin{minipage}[t]{0.48\columnwidth}
-        \includegraphics[width=\columnwidth]{phase_spectrum_experiment_7.png}
-        \subcaption{位相スペクトル $\angle X[k][\mathrm{rad}]$}
-        \label{fign:p7}
-    \end{minipage}
-    \end{center}
-    \caption{離散時間信号 $x[n]$ の離散フーリエスペクトル $X[k]$}
-  \end{figure}
 
   \newpage
 
   \section*{おわりに}
 
-    第1回では，様々なシミュレーションをコンピュータを用いて行うには，期待する分布に従った乱数生成の手法が必要不可欠であることがわかった．
-    
-    また，乱数生成の品質がシミュレーション結果に大きな影響を与えるということを理解することができた．
-
-    \quad
-
-    第2回では，生成したイベントの発生回数の確率分布が，理論値とくるいなく一致しているのが印象的であった．
-
-    世界のさまざまな事象をモデル化するのに，確率分布という概念が非常に重要であることがわかった．
-
-    \quad
-
-    第3回では，待ち行列のモンテカルロシミュレーションを行うことができ，特に Queue を用いた非同期処理システムをモデル化できたのがとても興味深かった．
-
-    現在，開発業で，分散型メールシステムに関わる非同期処理システムの構築を行なっているため，今回の課題は非常に参考になった．
-
-    具体的には，メールサーバからの取得プロトコルである，IMAP は 40 年近く前の 1986 年に誕生したため，現代の Webhook のようなステートレスにイベントを受け取る仕組みが十分でなく，最新のメールが来ていないかどうか，メールアカウントごとに確認しにいく必要があり，ここに非同期の待ち行列モデルが生じるため，設計に試行錯誤している．
+    todo
 
   \newpage
   
   \section*{参考文献}
 
     \begin{itemize}
-        \item Learn Rust - Rust Programming Language: \url{https://www.rust-lang.org/learn} (accessed: May 22, 2024)
-    \end{itemize}
-
-    \begin{itemize}
-      \item Kleinrock, Leonard (1975). "Queueing Systems Volume 1: Theory"
+        \item Numpy and Scipy Documentation - https://docs.scipy.org/doc/ (accessed 2024-06-19)
     \end{itemize}
 
 \end{document}
